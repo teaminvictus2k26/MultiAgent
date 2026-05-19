@@ -23,14 +23,17 @@ def supervisor_agent(state: TravelState) -> TravelState:
             "system",
             "You are a Travel Supervisor AI. Extract the destination, budget (as a number), "
             "and dates from the user request. "
-            "Also detect the appropriate currency based on the user's origin city: '{origin}'. "
-            "Rules: if origin is in India → currency='INR', currency_symbol='₹'. "
-            "If origin is in the USA → currency='USD', currency_symbol='$'. "
-            "If origin is in Europe → currency='EUR', currency_symbol='€'. "
-            "If origin is in the UK → currency='GBP', currency_symbol='£'. "
+            "Also detect the appropriate currency based on the destination city AND origin: '{origin}'. "
+            "Rules: "
+            "if destination OR origin is in India → currency='INR', currency_symbol='₹'. "
+            "If destination is in Japan → currency='JPY', currency_symbol='¥'. "
+            "If destination OR origin is in the USA → currency='USD', currency_symbol='$'. "
+            "If destination OR origin is in Europe → currency='EUR', currency_symbol='€'. "
+            "If destination OR origin is in the UK → currency='GBP', currency_symbol='£'. "
+            "If destination is in UAE → currency='AED', currency_symbol='AED '. "
             "Otherwise default to 'USD' and '$'. "
             "If the user explicitly mentions a currency symbol or code, use that. "
-            "If budget is missing, default to 50000 for INR or 2000 for other currencies. "
+            "If budget is missing, default to 150000 for INR, 150000 for JPY, or 2000 for USD/EUR/GBP. "
             "If dates are missing, default to 'Flexible'."
         ),
         ("human", "{request}")
@@ -211,10 +214,12 @@ def notification_agent(state: TravelState) -> TravelState:
     origin = state.get("origin") or "Unknown"
     total = (state.get("budget_report") or {}).get("grand_total", 0)
     ref = (state.get("booking_status") or {}).get("flight_booking_ref", "N/A")
+    symbol = state.get("currency_symbol") or "$"
+    currency = state.get("currency") or "USD"
 
     msg = (
         f"✈️ Your trip from {origin} to {dest} has been fully planned! "
-        f"Estimated total: ${total:,.2f}. "
+        f"Estimated total: {symbol}{total:,.0f} {currency}. "
         f"Flight ref: {ref}. "
         "Review your hotels, itinerary, and transfers below."
     )

@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { Send, Paperclip, Sparkles, Mic, FileText, CheckCircle2, Loader2 } from "lucide-react";
+import { Send, Paperclip, Sparkles, Mic, FileText, CheckCircle2, Loader2, Navigation, Phone } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, AgentId } from "@/types";
 import { chat } from "@/lib/api";
+import { useNavigate } from "@tanstack/react-router";
+
+// ─── Intent detection ──────────────────────────────────────────────────────
+const TRAVEL_KEYWORDS = ["trip", "travel", "flight", "hotel", "vacation", "holiday", "destination", "tour", "book a trip", "plan trip", "plan a trip", "journey"];
+const EMERGENCY_KEYWORDS = ["ambulance", "emergency", "book ambulance", "call ambulance", "accident", "urgent help", "help me", "sos", "rescue", "911", "dispatch"];
+
+function detectIntent(text: string): "travel" | "emergency" | null {
+  const lower = text.toLowerCase();
+  if (EMERGENCY_KEYWORDS.some(k => lower.includes(k))) return "emergency";
+  if (TRAVEL_KEYWORDS.some(k => lower.includes(k))) return "travel";
+  return null;
+}
 
 export function ChatPanel() {
   const messages = useAppStore((s) => s.messages);
@@ -17,12 +29,32 @@ export function ChatPanel() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [pendingUpload, setPendingUpload] = useState<string | null>(null);
+  const [redirectBanner, setRedirectBanner] = useState<{ intent: "travel" | "emergency"; text: string } | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const runChat = async (userText: string) => {
+    // ── Intent detection before hitting the backend ──
+    const intent = detectIntent(userText);
+    if (intent) {
+      // Show user message first
+      pushMessage({ id: crypto.randomUUID(), role: "user", content: userText, createdAt: Date.now() });
+      setRedirectBanner({ intent, text: userText });
+      // Show a redirect tip in chat
+      const destination = intent === "travel" ? "/travel" : "/emergency";
+      const label = intent === "travel" ? "Travel Planner" : "Emergency Dispatch";
+      pushMessage({
+        id: crypto.randomUUID(), role: "assistant", agentId: "classifier",
+        content: `I detected a **${label}** request! I'm redirecting you to the ${label} page where you can ${intent === "travel" ? "plan your trip with full details" : "book an ambulance and get immediate help"}.\n\nTaking you there now... 🚀`,
+        createdAt: Date.now()
+      });
+      setTimeout(() => navigate({ to: destination as any }), 1800);
+      return;
+    }
+
     setBusy(true);
     
     try {
@@ -202,10 +234,12 @@ export function ChatPanel() {
 
   const send = async () => {
     if (!input.trim() || busy) return;
-    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", content: input, createdAt: Date.now() };
-    pushMessage(userMsg);
     const text = input;
     setInput("");
+    // Only push user message for non-intent paths (intent path pushes it internally)
+    if (!detectIntent(text)) {
+      pushMessage({ id: crypto.randomUUID(), role: "user", content: text, createdAt: Date.now() });
+    }
     await runChat(text);
   };
 
