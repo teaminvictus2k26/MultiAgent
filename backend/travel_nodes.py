@@ -12,7 +12,7 @@ from travel_state import TravelState
 
 load_dotenv()
 
-llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0.2)
+llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0.2)
 
 
 def supervisor_agent(state: TravelState) -> TravelState:

@@ -50,6 +50,9 @@ function Landing() {
               style={{ background: "var(--gradient-hero)", boxShadow: "var(--shadow-glow)" }}>
               Launch intelligence system <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
+            <Link to="/portal" className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium hover:bg-secondary/60 text-emergency">
+              <ShieldCheck className="h-4 w-4" /> Staff Portal Login
+            </Link>
             <a href="#architecture" className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium hover:bg-secondary/60">
               <Github className="h-4 w-4" /> View architecture
             </a>
