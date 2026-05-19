@@ -24,12 +24,14 @@ app = FastAPI(title="MultiAgent Triage API")
 # Setup CORS to allow the frontend to call this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust in production
+    allow_origins=[
+        "http://localhost:8080",
+        "https://multi-agent-delta.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 @app.post("/upload", response_model=AnalyzeResponse)
 async def upload_document(file: UploadFile = File(...)):
     if not file.filename:
