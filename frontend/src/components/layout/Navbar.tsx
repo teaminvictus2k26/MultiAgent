@@ -13,9 +13,10 @@ export function Navbar() {
             <span className="font-display text-base font-semibold tracking-tight">Nexus</span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
+            <Link to="/emergency" className="hover:text-foreground transition-colors">Emergency</Link>
+            <Link to="/portal" className="hover:text-emergency transition-colors font-medium text-emergency/70">🚑 Staff Portal</Link>
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#architecture" className="hover:text-foreground transition-colors">Architecture</a>
-            <a href="#workflow" className="hover:text-foreground transition-colors">Workflow</a>
             <a href="https://github.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
               <Github className="h-3.5 w-3.5" /> GitHub
             </a>

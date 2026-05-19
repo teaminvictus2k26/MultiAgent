@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as TravelRouteImport } from './routes/travel'
+import { Route as PortalRouteImport } from './routes/portal'
+import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +25,16 @@ const WorkspaceRoute = WorkspaceRouteImport.update({
 const TravelRoute = TravelRouteImport.update({
   id: '/travel',
   path: '/travel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmergencyRoute = EmergencyRouteImport.update({
+  id: '/emergency',
+  path: '/emergency',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsRoute = DocumentsRouteImport.update({
@@ -45,6 +57,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
+  '/emergency': typeof EmergencyRoute
+  '/portal': typeof PortalRoute
   '/travel': typeof TravelRoute
   '/workspace': typeof WorkspaceRoute
 }
@@ -52,6 +66,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
+  '/emergency': typeof EmergencyRoute
+  '/portal': typeof PortalRoute
   '/travel': typeof TravelRoute
   '/workspace': typeof WorkspaceRoute
 }
@@ -60,21 +76,47 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/documents': typeof DocumentsRoute
+  '/emergency': typeof EmergencyRoute
+  '/portal': typeof PortalRoute
   '/travel': typeof TravelRoute
   '/workspace': typeof WorkspaceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/documents' | '/travel' | '/workspace'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/documents'
+    | '/emergency'
+    | '/portal'
+    | '/travel'
+    | '/workspace'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/documents' | '/travel' | '/workspace'
-  id: '__root__' | '/' | '/dashboard' | '/documents' | '/travel' | '/workspace'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/documents'
+    | '/emergency'
+    | '/portal'
+    | '/travel'
+    | '/workspace'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/documents'
+    | '/emergency'
+    | '/portal'
+    | '/travel'
+    | '/workspace'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   DocumentsRoute: typeof DocumentsRoute
+  EmergencyRoute: typeof EmergencyRoute
+  PortalRoute: typeof PortalRoute
   TravelRoute: typeof TravelRoute
   WorkspaceRoute: typeof WorkspaceRoute
 }
@@ -93,6 +135,20 @@ declare module '@tanstack/react-router' {
       path: '/travel'
       fullPath: '/travel'
       preLoaderRoute: typeof TravelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/emergency': {
+      id: '/emergency'
+      path: '/emergency'
+      fullPath: '/emergency'
+      preLoaderRoute: typeof EmergencyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documents': {
@@ -123,6 +179,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   DocumentsRoute: DocumentsRoute,
+  EmergencyRoute: EmergencyRoute,
+  PortalRoute: PortalRoute,
   TravelRoute: TravelRoute,
   WorkspaceRoute: WorkspaceRoute,
 }

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediRelay — Emergency Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-rose-500 selection:text-white">
+
+    <nav class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 sticky top-0 z-50 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="bg-rose-600 p-2 rounded-lg animate-pulse">
+                <i data-lucide="heart-pulse" class="w-6 h-6 text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">MediRelay</h1>
+                <p class="text-xs text-slate-400 font-mono">EMERGENCY AI NETWORK v1.0</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-full text-xs font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                BACKEND CONNECTED
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl">
+                <div class="flex items-center gap-2 mb-4 text-rose-400 font-semibold tracking-wide text-sm uppercase">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    Intake Telemetry
+                </div>
+
+                <form id="emergencyForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-mono text-slate-400 mb-1.5 uppercase">Emergency Symptoms / Context</label>
+                        <textarea id="rawSymptoms" rows="4" required
+                            class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none transition"
+                            placeholder="Describe symptoms, age, patient history... (e.g., 58yo female, crushing chest pain, radiating to arm, heavy sweating)"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-mono text-slate-400 mb-1.5 uppercase">Latitude</label>
+                            <input type="number" step="any" id="patientLat" value="19.9940" required
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-lg p-2.5 text-sm font-mono text-slate-300 focus:outline-none focus:ring-1 focus:ring-rose-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-slate-400 mb-1.5 uppercase">Longitude</label>
+                            <input type="number" step="any" id="patientLng" value="73.8338" required
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-lg p-2.5 text-sm font-mono text-slate-300 focus:outline-none focus:ring-1 focus:ring-rose-500" />
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                        class="w-full bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-medium py-3 rounded-lg text-sm transition shadow-lg shadow-rose-950 flex items-center justify-center gap-2 group">
+                        <span>Trigger AI Relay Network</span>
+                        <i data-lucide="zap" class="w-4 h-4 group-hover:scale-125 transition"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div id="pipelineCard" class="bg-slate-900 border border-slate-800 rounded-xl p-5 opacity-40 transition-all duration-300">
+                <div class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-4">Agent Traversal Sequence</div>
+                <div class="space-y-4 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800">
+
+                    <div id="step-1" class="flex items-center gap-4 relative">
+                        <div class="step-dot w-7 h-7 rounded-full bg-slate-950 border-2 border-slate-800 flex items-center justify-center text-xs font-mono z-10 text-slate-500">1</div>
+                        <div>
+                            <p class="text-sm font-medium leading-none step-text text-slate-500">Agent 1: Clinical Triage</p>
+                            <span class="text-[10px] font-mono step-status text-slate-600">IDLE</span>
+                        </div>
+                    </div>
+
+                    <div id="step-2" class="flex items-center gap-4 relative">
+                        <div class="step-dot w-7 h-7 rounded-full bg-slate-950 border-2 border-slate-800 flex items-center justify-center text-xs font-mono z-10 text-slate-500">2</div>
+                        <div>
+                            <p class="text-sm font-medium leading-none step-text text-slate-500">Agent 2: Hospital Finder</p>
+                            <span class="text-[10px] font-mono step-status text-slate-600">IDLE</span>
+                        </div>
+                    </div>
+
+                    <div id="step-3" class="flex items-center gap-4 relative">
+                        <div class="step-dot w-7 h-7 rounded-full bg-slate-950 border-2 border-slate-800 flex items-center justify-center text-xs font-mono z-10 text-slate-500">3</div>
+                        <div>
+                            <p class="text-sm font-medium leading-none step-text text-slate-500">Agent 3: Route Optimization</p>
+                            <span class="text-[10px] font-mono step-status text-slate-600">IDLE</span>
+                        </div>
+                    </div>
+
+                    <div id="step-4" class="flex items-center gap-4 relative">
+                        <div class="step-dot w-7 h-7 rounded-full bg-slate-950 border-2 border-slate-800 flex items-center justify-center text-xs font-mono z-10 text-slate-500">4</div>
+                        <div>
+                            <p class="text-sm font-medium leading-none step-text text-slate-500">Agent 4: ER Physician Brief</p>
+                            <span class="text-[10px] font-mono step-status text-slate-600">IDLE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-6">
+
+            <div id="emptyState" class="bg-slate-900/30 border border-dashed border-slate-800 rounded-xl h-[550px] flex flex-col items-center justify-center text-center p-6">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-full mb-4 text-slate-600">
+                    <i data-lucide="activity" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-slate-400 font-medium">Awaiting Dispatch Payload</h3>
+                <p class="text-sm text-slate-600 max-w-sm mt-1">Submit triage data on the left panel to execute multi-agent telemetry analysis paths.</p>
+            </div>
+
+            <div id="dashboardResults" class="hidden space-y-6">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Priority Classification</span>
+                            <span id="outSeverity" class="text-lg font-bold tracking-wide text-rose-500">CRITICAL</span>
+                        </div>
+                        <div class="p-2.5 bg-rose-500/10 text-rose-400 rounded-lg"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Target Resource Locked</span>
+                            <span id="outSpecialist" class="text-lg font-bold tracking-wide text-amber-500">Cardiologist</span>
+                        </div>
+                        <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-lg"><i data-lucide="user-cog" class="w-5 h-5"></i></div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Optimized ETA</span>
+                            <span id="outEta" class="text-lg font-bold tracking-wide text-emerald-400">11.4 Mins</span>
+                        </div>
+                        <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between h-80">
+                        <div>
+                            <div class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-500"></i> Optimized Destination
+                            </div>
+                            <h2 id="outHospitalName" class="text-xl font-bold text-slate-100">City Care Hospital</h2>
+                            <p id="outCondition" class="text-xs font-mono text-slate-400 mt-1">Suspected: STEMI Acute Cardiac Event</p>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-lg flex-1 my-3 flex items-center justify-center relative overflow-hidden font-mono text-xs text-slate-600">
+                            <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+                            <div class="absolute flex flex-col items-center gap-1 text-rose-500 font-sans" style="top:30%; left:35%;">
+                                <i data-lucide="ambulance" class="w-5 h-5 animate-bounce"></i>
+                                <span class="bg-slate-900 px-1.5 py-0.5 rounded text-[10px] border border-slate-800">Ambulance</span>
+                            </div>
+                            <div class="absolute flex flex-col items-center gap-1 text-emerald-400 font-sans" style="bottom:25%; right:25%;">
+                                <i data-lucide="building-2" class="w-6 h-6"></i>
+                                <span id="mapHospLabel" class="bg-slate-900 px-1.5 py-0.5 rounded text-[10px] border border-slate-800 font-semibold">Target ER</span>
+                            </div>
+                            <span class="absolute bottom-2 left-3 text-[10px] text-slate-500">GPS GRID SECURE LINK ACTIVE</span>
+                        </div>
+
+                        <p id="outRoute" class="text-xs font-mono text-slate-400 leading-relaxed bg-slate-950 p-2.5 rounded-lg border border-slate-850">Fastest corridor routing applied.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col h-80">
+                        <div class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i> Doctor Handoff Summary
+                        </div>
+                        <div id="outBrief" class="flex-1 overflow-y-auto pr-1 text-sm text-slate-300 font-serif leading-relaxed whitespace-pre-line bg-slate-950 p-4 rounded-lg border border-slate-850">
+                            Summary data parsing pipeline logs initialized...
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Target backend API configuration url
+        const BACKEND_URL = "http://localhost:8000/api/v1/emergency";
+
+        // Initialize Icons
+        lucide.createIcons();
+
+        document.getElementById('emergencyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Dom Nodes referencing handles
+            const submitBtn = document.getElementById('submitBtn');
+            const pipelineCard = document.getElementById('pipelineCard');
+            const emptyState = document.getElementById('emptyState');
+            const dashboardResults = document.getElementById('dashboardResults');
+
+            // Prep values payload map
+            const payload = {
+                raw_symptoms: document.getElementById('rawSymptoms').value,
+                patient_lat: parseFloat(document.getElementById('patientLat').value),
+                patient_lng: parseFloat(document.getElementById('patientLng').value)
+            };
+
+            // Enter Processing UI States
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span> Traversing Graph...`;
+            pipelineCard.classList.remove('opacity-40');
+
+            // Step 1 UI Update
+            updateStep(1, 'PROCESSING', 'text-amber-400 border-amber-500');
+
+            try {
+                // Post API call using native asynchronous window browser fetch
+                const response = await fetch(BACKEND_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error("Graph pipeline returned bad context error.");
+                const data = await response.json();
+
+                // Fire cascade animation updates to show multi-agent orchestration
+                setTimeout(() => {
+                    updateStep(1, 'COMPLETE', 'text-emerald-400 border-emerald-500 bg-emerald-950/20');
+                    updateStep(2, 'PROCESSING', 'text-amber-400 border-amber-500');
+
+                    setTimeout(() => {
+                        updateStep(2, 'COMPLETE', 'text-emerald-400 border-emerald-500 bg-emerald-950/20');
+                        updateStep(3, 'PROCESSING', 'text-amber-400 border-amber-500');
+
+                        setTimeout(() => {
+                            updateStep(3, 'COMPLETE', 'text-emerald-400 border-emerald-500 bg-emerald-950/20');
+                            updateStep(4, 'PROCESSING', 'text-amber-400 border-amber-500');
+
+                            setTimeout(() => {
+                                updateStep(4, 'COMPLETE', 'text-emerald-400 border-emerald-500 bg-emerald-950/20');
+
+                                // Render variables into layout dashboards maps cards elements safely
+                                document.getElementById('outSeverity').innerText = data.severity_level;
+                                document.getElementById('outSpecialist').innerText = data.required_specialist;
+                                document.getElementById('outEta').innerText = `${data.eta_minutes} Mins`;
+                                document.getElementById('outHospitalName').innerText = data.selected_hospital.name;
+                                document.getElementById('mapHospLabel').innerText = data.selected_hospital.name.split(" ")[0] + " ER";
+                                document.getElementById('outCondition').innerText = `Suspected: ${data.suspected_condition}`;
+                                document.getElementById('outRoute').innerText = data.route_details;
+                                document.getElementById('outBrief').innerText = data.doctor_brief;
+
+                                // Toggle card frames wrappers
+                                emptyState.classList.add('hidden');
+                                dashboardResults.classList.remove('hidden');
+                                resetSubmitButton();
+
+                            }, 600);
+                        }, 600);
+                    }, 600);
+                }, 400);
+
+            } catch (err) {
+                console.error(err);
+                alert("Pipeline Network Error: Make sure your FastAPI backend file back.py is running on port 8000!");
+                resetSubmitButton();
+                resetSteps();
+            }
+        });
+
+        // UI Pipeline Helper utilities updates state classes loops
+        function updateStep(stepId, statusText, classStyles) {
+            const stepNode = document.getElementById(`step-${stepId}`);
+            const dot = stepNode.querySelector('.step-dot');
+            const text = stepNode.querySelector('.step-text');
+            const status = stepNode.querySelector('.step-status');
+
+            dot.className = `step-dot w-7 h-7 rounded-full bg-slate-950 border-2 flex items-center justify-center text-xs font-mono z-10 ${classStyles}`;
+            text.className = `text-sm font-medium leading-none step-text ${statusText === 'PROCESSING' ? 'text-slate-100' : statusText === 'COMPLETE' ? 'text-slate-300' : 'text-slate-500'}`;
+            status.innerText = statusText;
+            status.className = `text-[10px] font-mono step-status ${statusText === 'PROCESSING' ? 'text-amber-400 animate-pulse' : statusText === 'COMPLETE' ? 'text-emerald-400' : 'text-slate-600'}`;
+        }
+
+        function resetSubmitButton() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = false;
+            btn.innerHTML = `<span>Trigger AI Relay Network</span> <i data-lucide="zap" class="w-4 h-4"></i>`;
+            lucide.createIcons();
+        }
+
+        function resetSteps() {
+            for(let i=1; i<=4; i++) {
+                updateStep(i, 'IDLE', 'border-slate-800 text-slate-500');
+            }
+            document.getElementById('pipelineCard').classList.add('opacity-40');
+        }
+    </script>
+</body>
+</html>

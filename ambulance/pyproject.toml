@@ -1,0 +1,10 @@
+[project]
+name = "hacktoan"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.136.1",
+    "python-dotenv>=1.2.2",
+    "unicorn>=2.1.4",
+    "uvicorn>=0.47.0",
+]

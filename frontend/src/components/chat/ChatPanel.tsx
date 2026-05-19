@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Send, Paperclip, Sparkles, Mic } from "lucide-react";
+import { Send, Paperclip, Sparkles, Mic, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
@@ -16,6 +16,7 @@ export function ChatPanel() {
   const documents = useAppStore((s) => s.documents);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pendingUpload, setPendingUpload] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,6 +77,7 @@ export function ChatPanel() {
     if (!file || busy) return;
     
     setBusy(true);
+    setPendingUpload(file.name);
     
     // Show user message immediately so they know it's working
     pushMessage({
@@ -193,6 +195,7 @@ export function ChatPanel() {
       });
     } finally {
       setBusy(false);
+      setPendingUpload(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -232,21 +235,43 @@ export function ChatPanel() {
 
       <div className="border-t border-border/60 p-4">
         <div className="mx-auto max-w-3xl">
-          <div className="glass-strong flex items-end gap-2 rounded-2xl p-2">
-            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
-            <button onClick={() => fileInputRef.current?.click()} className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"><Paperclip className="h-4 w-4" /></button>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder="Ask the agents anything, or drop a document…"
-              rows={1}
-              className="max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
-            />
-            <button className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"><Mic className="h-4 w-4" /></button>
-            <button onClick={send} disabled={!input.trim() || busy} className="rounded-lg p-2 text-primary-foreground transition-opacity disabled:opacity-40" style={{ background: "var(--gradient-hero)" }}>
-              <Send className="h-4 w-4" />
-            </button>
+          <div className="glass-strong flex flex-col gap-2 rounded-2xl p-2 transition-all">
+            {/* Visual Context Rectangle for Uploaded Documents */}
+            {(documents.length > 0 || pendingUpload) && (
+              <div className="flex flex-wrap items-center gap-2 px-2 pt-2 pb-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">Context:</span>
+                {documents.map((doc) => (
+                  <div key={doc.id} className="flex items-center gap-1.5 rounded-md bg-secondary/80 border border-primary/20 px-2 py-1 text-xs font-medium text-primary-foreground shadow-sm">
+                    <FileText className="h-3 w-3 text-accent" />
+                    <span className="truncate max-w-[150px]">{doc.name}</span>
+                    <CheckCircle2 className="h-3 w-3 text-emerald-400 ml-1" />
+                  </div>
+                ))}
+                {pendingUpload && (
+                  <div className="flex items-center gap-1.5 rounded-md bg-secondary/40 border border-border/40 px-2 py-1 text-xs font-medium text-muted-foreground shadow-sm">
+                    <Loader2 className="h-3 w-3 animate-spin text-accent" />
+                    <span className="truncate max-w-[150px] animate-pulse">Analyzing {pendingUpload}...</span>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="flex items-end gap-2">
+              <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+              <button onClick={() => fileInputRef.current?.click()} className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"><Paperclip className="h-4 w-4" /></button>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+                placeholder={documents.length > 0 ? "Ask the agents about your documents..." : "Ask the agents anything, or drop a document…"}
+                rows={1}
+                className="max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+              />
+              <button className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"><Mic className="h-4 w-4" /></button>
+              <button onClick={send} disabled={!input.trim() || busy} className="rounded-lg p-2 text-primary-foreground transition-opacity disabled:opacity-40" style={{ background: "var(--gradient-hero)" }}>
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
           </div>
           <p className="mt-2 text-center text-[10px] text-muted-foreground">Press <kbd className="rounded bg-secondary px-1">Enter</kbd> to send · <kbd className="rounded bg-secondary px-1">Shift+Enter</kbd> for newline</p>
         </div>

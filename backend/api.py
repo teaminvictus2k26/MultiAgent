@@ -1,4 +1,5 @@
 import os
+import traceback
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -14,6 +15,9 @@ from nodes import llm
 from travel_workflow import travel_app
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from typing import List, Dict, Any
+
+from emergency_schema import EmergencyRequest, EmergencyResponse
+from emergency_workflow import emergency_app
 
 app = FastAPI(title="MultiAgent Triage API")
 
@@ -89,7 +93,10 @@ async def upload_document(file: UploadFile = File(...)):
         
         return response
         
+    except HTTPException:
+        raise
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 class ChatRequest(BaseModel):
@@ -184,6 +191,21 @@ async def plan_trip(request: TripRequest):
             message=final_state.get("final_response", "")
         )
         return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/emergency", response_model=EmergencyResponse, tags=["Core Emergency Operation"])
+async def dispatch_emergency_relay(payload: EmergencyRequest):
+    try:
+        graph_input = {
+            "raw_symptoms": payload.raw_symptoms,
+            "patient_lat": payload.patient_lat,
+            "patient_lng": payload.patient_lng
+        }
+        
+        # Invoke emergency workflow graph
+        graph_result = emergency_app.invoke(graph_input)
+        return graph_result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

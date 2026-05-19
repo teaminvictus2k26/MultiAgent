@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -32,8 +33,14 @@
   --color-ring: var(--ring);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-emergency: var(--emergency);
+  --color-emergency-foreground: var(--emergency-foreground);
+  --color-medical: var(--medical);
+  --color-medical-foreground: var(--medical-foreground);
+  --color-surface: var(--surface);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 /* Glass Aurora — dark-first futuristic AI OS */
@@ -60,6 +67,11 @@
   --ring: oklch(0.78 0.18 295);
   --success: oklch(0.78 0.16 162);
   --warning: oklch(0.82 0.16 80);
+  --emergency: oklch(0.65 0.26 25);
+  --emergency-foreground: oklch(0.98 0.01 240);
+  --medical: oklch(0.78 0.16 200);
+  --medical-foreground: oklch(0.12 0.02 250);
+  --surface: oklch(0.20 0.025 250);
 
   --gradient-hero: linear-gradient(135deg, oklch(0.78 0.18 295), oklch(0.82 0.18 165));
   --gradient-violet: linear-gradient(135deg, oklch(0.78 0.18 295), oklch(0.55 0.2 270));
@@ -147,3 +159,26 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.08); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.16); }
+
+/* Leaflet dark theme adjustments */
+.leaflet-container {
+  background: oklch(0.14 0.02 250) !important;
+  font-family: var(--font-sans);
+}
+.leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(0.9) hue-rotate(180deg) saturate(0.4) brightness(0.95);
+}
+.leaflet-control-attribution {
+  background: oklch(0.18 0.02 250 / 0.8) !important;
+  color: oklch(0.6 0.02 240) !important;
+}
+.leaflet-control-attribution a { color: oklch(0.78 0.18 295) !important; }
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulse-ring 1.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+}
+

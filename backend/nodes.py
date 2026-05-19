@@ -5,32 +5,17 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import chromadb
-from chromadb import EmbeddingFunction, Embeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.vectorstores import InMemoryVectorStore
 from dotenv import load_dotenv
 from schema import ClassificationResult, MedicalFinding, RagResult, Citation, TaskResult, StartupSimulation, AutomatedResearch
 
 load_dotenv()
 
 # Initialize Groq LLM
-llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0)
+llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
 
-# --- Custom embedding function using sentence-transformers (PyTorch, NOT ONNX) ---
-# This bypasses ChromaDB's default ONNX download (79MB) and uses the lighter
-# PyTorch model (~22MB) cached in ~/.cache/huggingface after the first run.
-_embedding_model = None
 
-class SentenceTransformerEF(EmbeddingFunction):
-    """Wrap sentence-transformers to provide embeddings for ChromaDB."""
-    def __init__(self):
-        global _embedding_model
-        if _embedding_model is None:
-            from sentence_transformers import SentenceTransformer
-            _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-        self.model = _embedding_model
-
-    def __call__(self, input: List[str]) -> Embeddings:
-        return self.model.encode(input, convert_to_numpy=True).tolist()
 
 def classify_document(state: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -70,7 +55,7 @@ def analyze_medical(state: Dict[str, Any]) -> Dict[str, Any]:
 
 def process_general_rag(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    RAG Pipeline: Chunk -> Embed with sentence-transformers -> Store in ChromaDB
+    RAG Pipeline: Chunk -> Embed -> Store in InMemoryVectorStore
     -> Semantic vector search -> LLM answer generation.
     """
     text = state.get("extracted_text", "")
@@ -83,35 +68,39 @@ def process_general_rag(state: Dict[str, Any]) -> Dict[str, Any]:
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     chunks = [doc.page_content for doc in splitter.create_documents([text])]
 
-    # 2. Create a fresh ephemeral ChromaDB collection with our PyTorch embedding fn
-    ef = SentenceTransformerEF()
-    client = chromadb.EphemeralClient()
-    collection = client.create_collection(
-        name=f"doc_{uuid.uuid4().hex[:8]}",
-        embedding_function=ef,
+    # 2. Embed and Store using LangChain's InMemoryVectorStore
+    embeddings = HuggingFaceEmbeddings(model_name="TaylorAI/bge-micro-v2")
+    vectorstore = InMemoryVectorStore.from_texts(
+        texts=chunks,
+        embedding=embeddings
     )
 
-    # 3. Add all chunks (ChromaDB calls ef() to embed them)
-    collection.add(
-        documents=chunks,
-        ids=[str(i) for i in range(len(chunks))],
-    )
-
-    # 4. Semantic similarity search
-    results = collection.query(query_texts=[query], n_results=min(3, len(chunks)))
-    top_chunks = results["documents"][0] if results["documents"] else chunks[:3]
+    # 3. Semantic similarity search
+    results = vectorstore.similarity_search(query, k=3)
+    top_chunks = [doc.page_content for doc in results] if results else chunks[:3]
     context = "\n\n".join(top_chunks)
 
-    # 5. LLM answer over retrieved context
+    # 4. LLM answer over retrieved context
+    #    Use a simplified schema (no citations) to avoid tool-call validation
+    #    errors with smaller models that return citations as strings.
+    from pydantic import BaseModel as _BM, Field as _F
+    class _RagLLMOutput(_BM):
+        summary: str = _F(description="A concise summary answering the query based on the context")
+        key_points: List[str] = _F(default_factory=list, description="Key points from the document")
+
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a helpful research assistant. Answer the query based on the provided context. Extract key points and provide a concise summary."),
+        ("system", "You are a helpful research assistant. Answer the query based on the provided context. Extract key points and provide a concise summary. Do NOT include citations."),
         ("human", "Query: {query}\n\nContext:\n{context}")
     ])
-    chain = prompt | llm.with_structured_output(RagResult)
-    rag_result: RagResult = chain.invoke({"query": query, "context": context})
+    chain = prompt | llm.with_structured_output(_RagLLMOutput)
+    llm_out = chain.invoke({"query": query, "context": context})
 
-    # 6. Attach source citations
-    rag_result.citations = [Citation(chunk=c[:200] + "...") for c in top_chunks]
+    # 5. Build the full RagResult with citations from retrieved chunks
+    rag_result = RagResult(
+        summary=llm_out.summary,
+        key_points=llm_out.key_points,
+        citations=[Citation(chunk=c[:200] + "...") for c in top_chunks]
+    )
 
     return {"rag_result": rag_result, "rag_context": context}
 

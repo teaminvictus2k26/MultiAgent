@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Hexagon, MessageSquare, LayoutDashboard, FileText, Plus,
-  Bot, Activity,
+  Bot, Activity, Ambulance
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/useAppStore";
@@ -12,6 +12,7 @@ const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/travel", label: "Travel Planner", icon: Hexagon },
+  { to: "/emergency", label: "Emergency Dispatch", icon: Ambulance },
 ] as const;
 
 export function AppShell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
