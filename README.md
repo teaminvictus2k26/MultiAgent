@@ -1,3 +1,5 @@
+# MultiAgent
+MultiAgent Systeam
 # Nexus MediRelay — Multi-Agent Emergency Dispatch & Triage System
 
 Nexus MediRelay is an intelligent, multi-agent workspace and emergency response system. It features an automated intake dashboard, real-time doctor/ambulance driver queues, manual triage acceptance workflows, and a flexible document ingestion pipeline powered by LangGraph and RAG.
@@ -104,3 +106,4 @@ The project is structured as a monorepo containing three core components:
 - **Backend**: `FastAPI`, `Uvicorn`, `LangGraph`, `LangChain`, `PyMuPDF`, `sentence-transformers`, `torch`
 - **Frontend**: `React 19`, `Vite`, `Tailwind CSS`, `Lucide React`, `Zustand`, `Framer Motion`
 - **Database (Ephem/Local)**: `SQLite3` (Drizzle config initialized in portal)
+
