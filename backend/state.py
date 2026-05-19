@@ -1,4 +1,5 @@
 from typing import TypedDict, Optional, Any
+from schema import ClassificationResult, MedicalFinding, RagResult, TaskResult, StartupSimulation, AutomatedResearch
 
 class TriageState(TypedDict):
     """
@@ -7,7 +8,15 @@ class TriageState(TypedDict):
     file_path: Optional[str]
     user_symptoms: Optional[str]
     extracted_text: Optional[str]
-    doc_type: Optional[str]  # 'medical' or 'general'
-    final_answer: Optional[Any]
+    
+    classification: Optional[ClassificationResult]
+    doc_type: Optional[str]  # Derived pipeline: 'medical', 'general/rag', 'task', 'startup', 'research'
+    
+    medical_finding: Optional[MedicalFinding]
+    rag_result: Optional[RagResult]
+    task_result: Optional[TaskResult]
+    startup_sim: Optional[StartupSimulation]
+    auto_research: Optional[AutomatedResearch]
+    
     # For RAG context if non-medical
     rag_context: Optional[str]

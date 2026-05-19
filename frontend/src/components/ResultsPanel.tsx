@@ -10,7 +10,7 @@ const severityTone: Record<string, string> = {
 };
 
 export function ResultsPanel({ result }: { result: AnalyzeResponse }) {
-  const { classification, medical, research, pipeline } = result;
+  const { classification, medical, research, task_team, startup, automated_research, pipeline } = result;
 
   return (
     <div className="space-y-6">
@@ -31,8 +31,8 @@ export function ResultsPanel({ result }: { result: AnalyzeResponse }) {
             </p>
           )}
         </div>
-        <div className="rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
-          {pipeline === "medical" ? "Medical Pipeline" : "RAG Pipeline"}
+        <div className="rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary uppercase">
+          {pipeline} Pipeline
         </div>
       </div>
 
@@ -113,6 +113,48 @@ export function ResultsPanel({ result }: { result: AnalyzeResponse }) {
               </div>
             </Card>
           ) : null}
+        </div>
+      )}
+
+      {pipeline === "task" && task_team && (
+        <div className="space-y-4">
+          <Card icon={<ListChecks className="h-4 w-4" />} title="Plan" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{task_team.plan}</p>
+          </Card>
+          <Card icon={<Activity className="h-4 w-4" />} title="Execution" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{task_team.execution}</p>
+          </Card>
+          <Card icon={<FileText className="h-4 w-4" />} title="Review" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{task_team.review}</p>
+          </Card>
+        </div>
+      )}
+
+      {pipeline === "startup" && startup && (
+        <div className="space-y-4">
+          <Card icon={<Activity className="h-4 w-4" />} title="CEO Vision" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{startup.vision}</p>
+          </Card>
+          <Card icon={<Database className="h-4 w-4" />} title="CTO Architecture" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{startup.architecture}</p>
+          </Card>
+          <Card icon={<ListChecks className="h-4 w-4" />} title="PM Scoping" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{startup.scoping}</p>
+          </Card>
+        </div>
+      )}
+
+      {pipeline === "research" && automated_research && (
+        <div className="space-y-4">
+          <Card icon={<ListChecks className="h-4 w-4" />} title="Search Queries" wide>
+            <Tags items={automated_research.search_queries ?? []} />
+          </Card>
+          <Card icon={<FileText className="h-4 w-4" />} title="Summary" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{automated_research.summary}</p>
+          </Card>
+          <Card icon={<FlaskConical className="h-4 w-4" />} title="Presentation" wide>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{automated_research.presentation}</p>
+          </Card>
         </div>
       )}
     </div>

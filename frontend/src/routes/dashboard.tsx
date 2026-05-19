@@ -17,20 +17,39 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-const trend = Array.from({ length: 14 }).map((_, i) => ({
-  day: `D${i + 1}`,
-  medical: Math.round(8 + Math.random() * 22),
-  rag: Math.round(4 + Math.random() * 18),
-}));
-
-const split = [
-  { name: "Medical", value: 142, color: "oklch(0.78 0.18 295)" },
-  { name: "Research", value: 87, color: "oklch(0.82 0.18 165)" },
-  { name: "Legal", value: 26, color: "oklch(0.7 0.16 220)" },
-  { name: "Academic", value: 41, color: "oklch(0.78 0.14 70)" },
-];
+import { useAppStore } from "@/store/useAppStore";
+import { useMemo } from "react";
 
 function Dashboard() {
+  const documents = useAppStore((s) => s.documents);
+  const agents = useAppStore((s) => s.agents);
+
+  const { total, medicalCount, nonMedicalCount, split } = useMemo(() => {
+    const total = documents.length;
+    let medicalCount = 0;
+    const categoryCounts: Record<string, number> = {};
+    
+    documents.forEach(d => {
+      if (d.category === "medical") medicalCount++;
+      categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
+    });
+
+    const splitData = Object.entries(categoryCounts).map(([name, value], i) => {
+      const colors = ["oklch(0.78 0.18 295)", "oklch(0.82 0.18 165)", "oklch(0.7 0.16 220)", "oklch(0.78 0.14 70)", "oklch(0.6 0.2 20)"];
+      return { name: name.charAt(0).toUpperCase() + name.slice(1), value, color: colors[i % colors.length] };
+    });
+
+    return { total, medicalCount, nonMedicalCount: total - medicalCount, split: splitData };
+  }, [documents]);
+
+  const trend = useMemo(() => {
+    return Array.from({ length: 7 }).map((_, i) => ({
+      day: `D${i + 1}`,
+      medical: Math.round(medicalCount / 7),
+      rag: Math.round(nonMedicalCount / 7),
+    }));
+  }, [medicalCount, nonMedicalCount]);
+
   return (
     <AppShell>
       <div className="px-6 py-8 lg:px-10">
@@ -40,10 +59,10 @@ function Dashboard() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Documents processed" value="2,418" sub="+184 this week" icon={<FileText className="h-4 w-4" />} />
-          <StatCard label="Medical / non-medical" value="58 / 42 %" sub="Classifier confidence 96%" icon={<Stethoscope className="h-4 w-4" />} accent="accent" />
-          <StatCard label="Active agents" value="6" sub="All systems nominal" icon={<Bot className="h-4 w-4" />} />
-          <StatCard label="Avg latency" value="1.4s" sub="p95 · 3.1s" icon={<Activity className="h-4 w-4" />} accent="warning" />
+          <StatCard label="Documents processed" value={total.toString()} sub="Total uploaded" icon={<FileText className="h-4 w-4" />} />
+          <StatCard label="Medical / non-medical" value={`${medicalCount} / ${nonMedicalCount}`} sub="Split" icon={<Stethoscope className="h-4 w-4" />} accent="accent" />
+          <StatCard label="Active agents" value={agents.filter(a => a.status === "working").length.toString()} sub="Currently processing" icon={<Bot className="h-4 w-4" />} />
+          <StatCard label="System Status" value="Online" sub="All systems nominal" icon={<Activity className="h-4 w-4" />} accent="warning" />
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
@@ -98,14 +117,11 @@ function Dashboard() {
           <div className="glass-strong rounded-2xl p-5">
             <h3 className="font-display text-sm font-semibold">Agent health</h3>
             <div className="mt-4 space-y-3">
-              {["Classifier","Diagnosis","Triage","Research","Summary","Memory"].map((a, i) => (
-                <div key={a} className="flex items-center justify-between text-sm">
-                  <span>{a}</span>
+              {agents.map((a, i) => (
+                <div key={a.id} className="flex items-center justify-between text-sm">
+                  <span>{a.name}</span>
                   <div className="flex items-center gap-3">
-                    <div className="h-1.5 w-32 overflow-hidden rounded-full bg-secondary">
-                      <div className="h-full rounded-full" style={{ width: `${72 + (i * 4) % 28}%`, background: "var(--gradient-hero)" }} />
-                    </div>
-                    <span className="text-xs text-muted-foreground">{72 + (i * 4) % 28}%</span>
+                    <span className="text-xs text-muted-foreground capitalize">{a.status}</span>
                   </div>
                 </div>
               ))}
@@ -115,9 +131,8 @@ function Dashboard() {
             <h3 className="font-display text-sm font-semibold">System</h3>
             <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
               <div><dt className="text-xs text-muted-foreground">Backend</dt><dd className="mt-1 flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-accent pulse-glow" /> Online</dd></div>
-              <div><dt className="text-xs text-muted-foreground">Vector DB</dt><dd className="mt-1">pgvector · 12 GB</dd></div>
-              <div><dt className="text-xs text-muted-foreground">Embedding</dt><dd className="mt-1">text-embedding-3-large</dd></div>
-              <div><dt className="text-xs text-muted-foreground">LLM</dt><dd className="mt-1">gpt-5.2 / claude-opus-4</dd></div>
+              <div><dt className="text-xs text-muted-foreground">Vector DB</dt><dd className="mt-1">ChromaDB</dd></div>
+              <div><dt className="text-xs text-muted-foreground">LLM</dt><dd className="mt-1">llama-3.3-70b-versatile</dd></div>
             </dl>
           </div>
         </div>

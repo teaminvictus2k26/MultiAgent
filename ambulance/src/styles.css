@@ -1,0 +1,152 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-emergency: var(--emergency);
+  --color-emergency-foreground: var(--emergency-foreground);
+  --color-medical: var(--medical);
+  --color-medical-foreground: var(--medical-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root,
+.dark {
+  --radius: 0.75rem;
+  /* Cyberpunk medical-tech dark theme */
+  --background: oklch(0.16 0.02 250);
+  --foreground: oklch(0.96 0.01 240);
+  --surface: oklch(0.20 0.025 250);
+  --surface-elevated: oklch(0.24 0.03 250);
+  --card: oklch(0.20 0.025 250);
+  --card-foreground: oklch(0.96 0.01 240);
+  --popover: oklch(0.22 0.028 250);
+  --popover-foreground: oklch(0.96 0.01 240);
+  --primary: oklch(0.72 0.18 230); /* electric medical blue */
+  --primary-foreground: oklch(0.12 0.02 250);
+  --secondary: oklch(0.28 0.03 250);
+  --secondary-foreground: oklch(0.96 0.01 240);
+  --muted: oklch(0.25 0.02 250);
+  --muted-foreground: oklch(0.70 0.02 240);
+  --accent: oklch(0.28 0.04 200);
+  --accent-foreground: oklch(0.96 0.01 240);
+  --emergency: oklch(0.65 0.26 25); /* hot red */
+  --emergency-foreground: oklch(0.98 0.01 240);
+  --medical: oklch(0.78 0.16 200); /* cyan medical */
+  --medical-foreground: oklch(0.12 0.02 250);
+  --success: oklch(0.72 0.20 150);
+  --warning: oklch(0.80 0.18 80);
+  --destructive: oklch(0.65 0.26 25);
+  --destructive-foreground: oklch(0.98 0.01 240);
+  --border: oklch(0.30 0.03 250 / 60%);
+  --input: oklch(0.26 0.03 250);
+  --ring: oklch(0.72 0.18 230);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html, body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.72 0.18 230 / 0.18), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, oklch(0.65 0.26 25 / 0.12), transparent);
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: linear-gradient(180deg, oklch(0.24 0.03 250 / 0.7), oklch(0.18 0.025 250 / 0.7));
+    backdrop-filter: blur(12px);
+    border: 1px solid oklch(0.40 0.04 240 / 0.4);
+  }
+  .glow-emergency {
+    box-shadow: 0 0 40px oklch(0.65 0.26 25 / 0.5), 0 0 80px oklch(0.65 0.26 25 / 0.25);
+  }
+  .glow-medical {
+    box-shadow: 0 0 30px oklch(0.72 0.18 230 / 0.4);
+  }
+  .text-emergency { color: var(--color-emergency); }
+  .text-medical { color: var(--color-medical); }
+  .bg-emergency { background-color: var(--color-emergency); }
+  .bg-medical { background-color: var(--color-medical); }
+  .grid-bg {
+    background-image:
+      linear-gradient(oklch(0.72 0.18 230 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.72 0.18 230 / 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .scanline::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent, oklch(0.72 0.18 230 / 0.08), transparent);
+    animation: scan 4s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.8; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+  .pulse-ring {
+    animation: pulse-ring 1.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  }
+  .font-mono { font-family: var(--font-mono); }
+}
+
+/* Leaflet dark theme adjustments */
+.leaflet-container {
+  background: oklch(0.14 0.02 250) !important;
+  font-family: var(--font-display);
+}
+.leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(0.9) hue-rotate(180deg) saturate(0.4) brightness(0.95);
+}
+.leaflet-control-attribution {
+  background: oklch(0.18 0.02 250 / 0.8) !important;
+  color: oklch(0.6 0.02 240) !important;
+}
+.leaflet-control-attribution a { color: oklch(0.72 0.18 230) !important; }

@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Hexagon, MessageSquare, LayoutDashboard, FileText, Settings, Plus,
-  Bot, Activity,
+  Hexagon, MessageSquare, LayoutDashboard, FileText, Plus,
+  Bot, Activity, Ambulance
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/useAppStore";
@@ -11,19 +11,21 @@ const nav = [
   { to: "/workspace", label: "Workspace", icon: MessageSquare },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/documents", label: "Documents", icon: FileText },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/travel", label: "Travel Planner", icon: Hexagon },
+  { to: "/emergency", label: "Emergency Dispatch", icon: Ambulance },
 ] as const;
 
 export function AppShell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const agents = useAppStore((s) => s.agents);
+  const reset = useAppStore((s) => s.reset);
 
   return (
     <div className="aurora-bg min-h-screen">
       <div className="grid min-h-screen grid-cols-[260px_1fr] lg:grid-cols-[260px_1fr_340px]">
         {/* LEFT SIDEBAR */}
         <aside className="sticky top-0 hidden h-screen flex-col border-r border-border/60 bg-background/40 backdrop-blur-xl md:flex">
-          <div className="flex h-16 items-center gap-2 border-b border-border/60 px-5">
+          <Link to="/" className="flex h-16 items-center gap-2 border-b border-border/60 px-5 hover:bg-secondary/40 transition-colors">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "var(--gradient-hero)" }}>
               <Hexagon className="h-4 w-4 text-background" />
             </div>
@@ -31,16 +33,18 @@ export function AppShell({ children, right }: { children: React.ReactNode; right
               <p className="font-display text-sm font-semibold">Nexus</p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Agent OS</p>
             </div>
-          </div>
+          </Link>
 
           <div className="px-3 py-4">
-            <Link
-              to="/workspace"
+            <button
+              onClick={() => {
+                reset();
+              }}
               className="flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-primary-foreground"
               style={{ background: "var(--gradient-hero)" }}
             >
               <Plus className="h-4 w-4" /> New session
-            </Link>
+            </button>
           </div>
 
           <nav className="px-2">
@@ -68,7 +72,7 @@ export function AppShell({ children, right }: { children: React.ReactNode; right
           <div className="mt-6 px-4 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
             <div className="flex items-center gap-1.5"><Bot className="h-3 w-3" /> Agents</div>
           </div>
-          <div className="mt-2 space-y-1 px-2">
+          <div className="mt-2 flex-1 overflow-y-auto space-y-1 px-2 pb-4">
             {agents.map((a) => <AgentBadge key={a.id} agent={a} />)}
           </div>
 
