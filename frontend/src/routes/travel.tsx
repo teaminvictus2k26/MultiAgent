@@ -19,8 +19,19 @@ function TravelPlanner() {
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [origin, setOrigin] = useState("");
+  const [currency, setCurrency] = useState(""); // empty = auto-detect
   const [plan, setPlan] = useState<TravelPlanResponse | null>(null);
   const [error, setError] = useState("");
+
+  const CURRENCIES = [
+    { code: "", label: "Auto-detect", symbol: "" },
+    { code: "INR", label: "₹ INR (Indian Rupee)", symbol: "₹" },
+    { code: "USD", label: "$ USD (US Dollar)", symbol: "$" },
+    { code: "EUR", label: "€ EUR (Euro)", symbol: "€" },
+    { code: "GBP", label: "£ GBP (British Pound)", symbol: "£" },
+    { code: "JPY", label: "¥ JPY (Japanese Yen)", symbol: "¥" },
+    { code: "AED", label: "AED (UAE Dirham)", symbol: "AED " },
+  ];
 
   const detectLocation = async () => {
     setLocating(true);
@@ -42,7 +53,9 @@ function TravelPlanner() {
     setLoading(true);
     setError("");
     try {
-      const response = await planTrip(input, origin);
+      // Append currency hint to the prompt if user selected one
+      const currencyHint = currency ? ` Please show all prices in ${currency}.` : "";
+      const response = await planTrip(input + currencyHint, origin);
       setPlan(response);
     } catch (err: any) {
       setError(err.message || "Failed to plan trip.");
@@ -81,6 +94,14 @@ function TravelPlanner() {
                 <button onClick={() => setInput("I need a weekend getaway to Paris for two people, max $1500")} className="glass-strong rounded-xl p-4 text-sm transition-colors hover:bg-secondary/60">
                   <p className="font-medium">Paris, France</p>
                   <p className="mt-1 text-muted-foreground">Weekend getaway, $1500 budget</p>
+                </button>
+                <button onClick={() => { setInput("Plan a 3-day trip to Goa under ₹25000"); setCurrency("INR"); }} className="glass-strong rounded-xl p-4 text-sm transition-colors hover:bg-secondary/60">
+                  <p className="font-medium">Goa, India 🇮🇳</p>
+                  <p className="mt-1 text-muted-foreground">3 days, ₹25,000 budget</p>
+                </button>
+                <button onClick={() => { setInput("Plan a 4-day trip to Udupi Karnataka from Mumbai"); setCurrency("INR"); }} className="glass-strong rounded-xl p-4 text-sm transition-colors hover:bg-secondary/60">
+                  <p className="font-medium">Udupi, Karnataka 🇮🇳</p>
+                  <p className="mt-1 text-muted-foreground">4 days, Mumbai departure, INR</p>
                 </button>
               </div>
             </div>
@@ -343,7 +364,7 @@ function TravelPlanner() {
 
         <div className="border-t border-border/60 bg-background/40 p-4 backdrop-blur-xl">
           <form onSubmit={handleSubmit} className="mx-auto max-w-4xl space-y-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <button
                 type="button"
                 onClick={detectLocation}
@@ -353,6 +374,21 @@ function TravelPlanner() {
                 {locating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
                 {origin || "Detect Origin"}
               </button>
+              {/* Currency selector */}
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="rounded-lg border border-border bg-secondary/60 px-3 py-1.5 text-xs font-medium text-muted-foreground outline-none focus:border-accent hover:text-foreground cursor-pointer"
+              >
+                {CURRENCIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.label}</option>
+                ))}
+              </select>
+              {currency && (
+                <span className="text-xs text-accent font-mono font-medium">
+                  Prices in {currency}
+                </span>
+              )}
             </div>
             <div className="relative flex items-center">
               <input
